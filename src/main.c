@@ -1,6 +1,7 @@
 #include "include.h"
 
 int main(){
+    cbm_k_clall();
 
     printf("yo yo yo here's something funny for ya\nthis thing is a music player!");
 
@@ -9,8 +10,8 @@ int main(){
     cbm_k_open();
 
     wavkit_init_engine();
-    wavkit_setrate(PCM_8KHZ,0,0);
-    wavkit_setfile(0,"TEST.WAV");
+    wavkit_setrate(PCM_11025HZ,0,1);
+    wavkit_setfile(0,"LEGO.WAV");
 
     while(1){
         waitvsync();
