@@ -1,5 +1,8 @@
 #include "include.h"
 
+
+
+// example program for WAVKIT V1
 int main(){
     cbm_k_clall();
 
@@ -9,17 +12,18 @@ int main(){
     cbm_k_setnam("CD:ASSETS");
     cbm_k_setlfs(15,8,15);
     cbm_k_open();
-    cbm_k_close(15);
     cbm_k_setnam("U0>B\x01");
-    cbm_k_setlfs(15,8,15);
     cbm_k_open();
 
 
     wavkit_init_engine();
-    wavkit_setrate(PCM_11025HZ,0,1);
-    wavkit_setfile("LEGO.WAV");
+
+    wavkit_setvol(12);
+    wavkit_setrate(PCM_8000HZ,0,0);
+    wavkit_setfile("LMAO.WAV");
     wavkit_setloop(1);
     wavkit_play();
+
 
     while(1){
         waitvsync();

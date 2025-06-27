@@ -23,35 +23,34 @@
 
 // stolen from cc65's <cbm.c>
 short cbm_read(unsigned char lfn, void* buffer, unsigned int size){
+
     /* Reads up to "size" bytes from a file to "buffer".
     ** Returns the number of actually read bytes, 0 if there are no bytes left
     ** (EOF) or -1 in case of an error. __oserror contains an errorcode then (see
     ** table below).
     */
-        static unsigned int bytesread;
-        static unsigned char tmp;
-        /* if we can't change to the inputchannel #lfn then return an error */
-        if ((cbm_k_chkin(lfn))) return -1;
-    
-        bytesread = 0;
-    
-        while (bytesread<size && !cbm_k_readst()) {
-            tmp = cbm_k_basin();
-    
-            /* the kernal routine BASIN sets ST to EOF if the end of file
-            ** is reached the first time, then we have store tmp.
-            ** every subsequent call returns EOF and READ ERROR in ST, then
-            ** we have to exit the loop here immediately.
-            */
-            if (cbm_k_readst() & 0xBF) break;
-    
-            ((unsigned char*)buffer)[bytesread++] = tmp;
-        }
-        cbm_k_clrch();
-        return bytesread;
-    }
-    
+    static unsigned int bytesread;
+    static unsigned char tmp;
+    /* if we can't change to the inputchannel #lfn then return an error */
+    if ((cbm_k_chkin(lfn))) return -1;
 
+    bytesread = 0;
+
+    while (bytesread<size && !cbm_k_readst()) {
+        tmp = cbm_k_basin();
+
+        /* the kernal routine BASIN sets ST to EOF if the end of file
+        ** is reached the first time, then we have store tmp.
+        ** every subsequent call returns EOF and READ ERROR in ST, then
+        ** we have to exit the loop here immediately.
+        */
+        if (cbm_k_readst() & 0xBF) break;
+
+        ((unsigned char*)buffer)[bytesread++] = tmp;
+    }
+    cbm_k_clrch();
+    return bytesread;
+}
 
 typedef unsigned char u8;
 typedef unsigned short u16;
@@ -78,8 +77,6 @@ struct wav_header {
     char Subchunk2ID[4];            // "data"
     unsigned long Subchunk2Size;    // length of audio data
 };
-
-
 
 u8 wavkit_global_atten = 15;
 //u32 wavkit_tmp, wavkit_tmp2;
@@ -111,10 +108,13 @@ struct wavkit_ch {
 
 // sets default values. call wavkit_setrate() after this.
 void wavkit_init_engine(){
-    wavkit_global_atten = 15;
+    wavkit_global_atten = 0;
+    wavkit_ch.rate = 0;
+    wavkit_ch.stereo = 0;
+    wavkit_ch.sixteenbit = 0;
+    wavkit_ch.loop = 0;
+    wavkit_ch.playing = 0;
 }
-
-
 
 
 void wavkit_setvol(const u8 volume){
@@ -123,11 +123,9 @@ void wavkit_setvol(const u8 volume){
     else wavkit_global_atten = volume;
 
     // write in the volume without changing stereo/16bit mode
-    unsigned char tmp = (VERA.audio.control & 0xf0);
-    VERA.audio.control = (tmp | wavkit_global_atten);
+    unsigned char tmp = (VERA.audio.control & 0x30);
+    VERA.audio.control = (tmp + wavkit_global_atten);
 }
-
-
 
 
 void wavkit_setrate(const u8 samplerate, const bool stereo, const bool bitdepth){
@@ -154,20 +152,13 @@ void wavkit_setfile(const char * file){
     
 }
 
+
 void wavkit_setloop(const bool loop){
     wavkit_ch.loop = loop;
 }
 
+
 void wavkit_fetchnext(){
-    
-    //RAM_BANK = 0x01;
-
-    //wavkit_tmp = 0;
-    //wavkit_tmp2 = 0;
-    
-    
-    //cbm_k_chkin(10);
-
     if(lsb(wavkit_ch.pos) == 0){
         cx16_k_macptr(255,0,&wavkit_ch.buffer);
         wavkit_ch.buffer[255] = cbm_k_acptr();
@@ -175,15 +166,16 @@ void wavkit_fetchnext(){
         if ((cbm_k_readst() & 0b01000000)){ // end of file
             cx16_k_memory_fill(wavkit_ch.buffer,256,0x80);
             VERA.audio.rate = 0;
+            wavkit_ch.playing = 0;
             //VERA.audio.control = 0b10000000;
             cbm_k_close(10);
-            //if(wavkit_ch.loop){
+            if(wavkit_ch.loop){
                 wavkit_setfile(wavkit_ch.filename);
                 wavkit_setrate(wavkit_ch.rate, wavkit_ch.stereo, wavkit_ch.sixteenbit);
                 VERA.audio.rate = wavkit_ch.rate;
-            //}
+                wavkit_ch.playing = 1;
+            }
         }
-        
     }
 
     
@@ -226,6 +218,7 @@ void wavkit_fetchnext(){
     
 }
 
+
 void wavkit_writenext(){
     switch(PCM_PROPERTIES){
         default:
@@ -238,8 +231,9 @@ void wavkit_writenext(){
     }
 }
 
+
 void wavkit_tick(){
-    if(VERA.audio.rate == 0) return;
+    if(wavkit_ch.playing == 0) return;
 
     cbm_k_chkin(10);
     //if ((cbm_k_readst() & 0b01000000)) { 
@@ -251,16 +245,22 @@ void wavkit_tick(){
     }   
 }
 
+
 void wavkit_play(){
     VERA.audio.rate = wavkit_ch.rate;
+    wavkit_ch.playing = 1;
 }
+
 
 void wavkit_stop(){
     VERA.audio.rate = 0;
+    wavkit_ch.playing = 0;
 }
+
 
 void wavkit_restart(){
     VERA.audio.rate = 0;
+    wavkit_ch.playing = 0;
     VERA.audio.control = 0b10000000;
     cbm_k_close(10);
     wavkit_setfile(wavkit_ch.filename);
