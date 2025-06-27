@@ -4,34 +4,37 @@ unsigned short pad_old; // previous frame's input
 unsigned short pad;     // current frame's input
 unsigned short pad_new; // just-pressed inputs (single-frame)
 
-#define pad_b       (low_byte(pad) & 0x80)
-#define pad_y       (low_byte(pad) & 0x40)
-#define pad_select  (low_byte(pad) & 0x20)
-#define pad_start   (low_byte(pad) & 0x10)
-#define pad_up      (low_byte(pad) & 0x08)
-#define pad_down    (low_byte(pad) & 0x04)
-#define pad_left    (low_byte(pad) & 0x02)
-#define pad_right   (low_byte(pad) & 0x01)
+#define msb(a) *((unsigned char*)&a+1)
+#define lsb(a) *((unsigned char*)&a)
 
-#define pad_a       (high_byte(pad) & 0x80)
-#define pad_x       (high_byte(pad) & 0x40)
-#define pad_l       (high_byte(pad) & 0x20)
-#define pad_r       (high_byte(pad) & 0x10)
+#define pad_b       (lsb(pad) & 0x80)
+#define pad_y       (lsb(pad) & 0x40)
+#define pad_select  (lsb(pad) & 0x20)
+#define pad_start   (lsb(pad) & 0x10)
+#define pad_up      (lsb(pad) & 0x08)
+#define pad_down    (lsb(pad) & 0x04)
+#define pad_left    (lsb(pad) & 0x02)
+#define pad_right   (lsb(pad) & 0x01)
+
+#define pad_a       (msb(pad) & 0x80)
+#define pad_x       (msb(pad) & 0x40)
+#define pad_l       (msb(pad) & 0x20)
+#define pad_r       (msb(pad) & 0x10)
 
 
-#define pad_b_new       (low_byte(pad_new) & 0x80)
-#define pad_y_new       (low_byte(pad_new) & 0x40)
-#define pad_select_new  (low_byte(pad_new) & 0x20)
-#define pad_start_new   (low_byte(pad_new) & 0x10)
-#define pad_up_new      (low_byte(pad_new) & 0x08)
-#define pad_down_new    (low_byte(pad_new) & 0x04)
-#define pad_left_new    (low_byte(pad_new) & 0x02)
-#define pad_right_new   (low_byte(pad_new) & 0x01)
+#define pad_b_new       (lsb(pad_new) & 0x80)
+#define pad_y_new       (lsb(pad_new) & 0x40)
+#define pad_select_new  (lsb(pad_new) & 0x20)
+#define pad_start_new   (lsb(pad_new) & 0x10)
+#define pad_up_new      (lsb(pad_new) & 0x08)
+#define pad_down_new    (lsb(pad_new) & 0x04)
+#define pad_left_new    (lsb(pad_new) & 0x02)
+#define pad_right_new   (lsb(pad_new) & 0x01)
 
-#define pad_a_new       (high_byte(pad_new) & 0x80)
-#define pad_x_new       (high_byte(pad_new) & 0x40)
-#define pad_l_new       (high_byte(pad_new) & 0x20)
-#define pad_r_new       (high_byte(pad_new) & 0x10)
+#define pad_a_new       (msb(pad_new) & 0x80)
+#define pad_x_new       (msb(pad_new) & 0x40)
+#define pad_l_new       (msb(pad_new) & 0x20)
+#define pad_r_new       (msb(pad_new) & 0x10)
 
 
 #define xstr(s) str(s)
@@ -104,8 +107,8 @@ void poll_controller(){
     pad ^= 0xff00;
     
 
-    //if(mouse_left)low_byte(pad)^=0x80; // toggle B if left mouse held
-    //if(mouse_left)low_byte(pad)^=0x80; // toggle B if left mouse held
+    //if(mouse_left)lsb(pad)^=0x80; // toggle B if left mouse held
+    //if(mouse_left)lsb(pad)^=0x80; // toggle B if left mouse held
 
     // pad_old: previous frame's inputs
     // pad:     current frame's inputs

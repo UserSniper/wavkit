@@ -2,7 +2,7 @@ CC = mos-cx16-clang
 CARGS = -Oz -flto -fnonreentrant -Wno-int-conversion 
 
 WAVKIT = wavkit.o
-WAVARGS = -Os -flto -fnonreentrant -Wno-int-conversion 
+WAVARGS = -Oz -flto -fnonreentrant -Wno-int-conversion 
 
 default: make
 
@@ -15,4 +15,4 @@ make:
 
 	$(CC) $(WAVARGS) -c ./src/lib/wavkit.c -o $(WAVKIT)
 	$(CC) $(CARGS) ./src/main.c $(WAVKIT) -o ./OUT/WAVKIT.PRG
-	./x16emu/x16emu -debug -zeroram -midline-effects -c816 -mhz 8
+	./x16emu/x16emu -debug -zeroram -midline-effects -c816 -mhz 8 #-sdcard ./sdcard.img
