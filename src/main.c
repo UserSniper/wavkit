@@ -20,7 +20,7 @@ int main(){
 
     wavkit_setvol(12);
     wavkit_setrate(PCM_8000HZ,0,0);
-    wavkit_setfile("LMAO.WAV");
+    wavkit_setfile("DARKNESS.WAV");
     wavkit_setloop(1);
     wavkit_play();
 
